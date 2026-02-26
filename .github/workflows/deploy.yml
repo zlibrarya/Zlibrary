@@ -43,16 +43,36 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Move build files to root
+      - name: Debug build output
+        run: ls -la dist/
+        
+      - name: Fix build structure
         run: |
-          # 创建一个临时目录
-          mkdir temp
-          # 复制构建文件到临时目录
-          cp -r dist/static/* temp/
-          # 清理dist目录
-          rm -rf dist
-          # 重命名临时目录为dist
-          mv temp dist
+          # 确保dist目录存在
+          mkdir -p dist
+          # 检查是否存在dist/static目录
+          if [ -d "dist/static" ]; then
+            # 创建一个临时目录
+            mkdir temp
+            # 复制构建文件到临时目录
+            cp -r dist/static/* temp/
+            # 清理dist目录
+            rm -rf dist
+            # 重命名临时目录为dist
+            mv temp dist
+          fi
+          # 确保index.html在dist根目录
+          if [ -f "dist/index.html" ]; then
+            echo "index.html found in dist root"
+          else
+            echo "Warning: index.html not found in dist root"
+            ls -la dist/
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
           
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
